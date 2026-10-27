@@ -208,6 +208,9 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
 #proBox .body{border:2px solid #f0a83a;border-top:0}
 #instBox .body p{margin:0 0 8px;font-size:14.5px;line-height:1.45}
 #instBox .body p:last-child{margin-bottom:0}
+.ftr{margin:28px 0 0;text-align:center}
+.ftr img{display:block;width:100%;max-width:420px;height:auto;margin:0 auto;border-radius:12px}
+@media (prefers-color-scheme:dark){.ftr img{opacity:.88}}
 </style>
 </head><body>
 <div class="wrap">
@@ -216,7 +219,7 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
 <!-- VIEW: start -->
 <section id="vStart" hidden>
   <div class="card stack">
-    <div><b>Nová obhlídka</b><div class="hint">Stačí příjmení. Data zůstávají jen v tomto zařízení.</div></div>
+    <div><b>Nová obhlídka</b><div class="hint">Stačí příjmení. Data se ukládají do zařízení <b>automaticky</b> a zůstávají jen v něm.</div></div>
     <label class="f">Příjmení klienta<input id="inClient" type="text" autocomplete="off" placeholder="Novák"></label>
     <label class="f">Město (nepovinné)<input id="inCity" type="text" autocomplete="off" placeholder="Náchod"></label>
     <button id="btnStart" class="btn-acc">Začít obhlídku</button>
@@ -228,7 +231,7 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
   <details class="pro" id="instBox"><summary>📱 Přidat na plochu a uložení dat ▾</summary><div class="body">
     <p><b>iPhone (Safari):</b> otevřete web v Safari → tlačítko Sdílet → <i>Přidat na plochu</i>. Pak appku spouštějte vždy z plochy.</p>
     <p><b>Android (Chrome):</b> menu ⋮ → <i>Přidat na plochu</i> / <i>Instalovat aplikaci</i>.</p>
-    <p><b>Data jsou jen v tomto zařízení</b> (žádný server). Safari může data webu otevřeného jen v prohlížeči smazat po 7 dnech používání Safari bez návštěvy appky; z plochy se to dle Applu nemá dít. Nemažte „data webu“ v nastavení prohlížeče.</p>
+    <p><b>Data se do zařízení ukládají automaticky</b> a zůstávají jen v něm (žádný server). Safari může data webu otevřeného jen v prohlížeči smazat po 7 dnech používání Safari bez návštěvy appky; z plochy se to dle Applu nemá dít. Nemažte „data webu“ v nastavení prohlížeče.</p>
     <p><b>Po každé obhlídce</b> pošlete 📤 zálohu (Disk / e-mail) a výsledek přepište do Domovea.</p>
   </div></details>
 </section>
@@ -316,6 +319,8 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
   <div class="hint" style="margin-top:6px">Shrnutí všech tří variant + všechna okna s rozměry. Obhlídka zůstává i v 🗂 Archivu 30 dní.</div>
   <div style="margin-top:18px" id="wipeWrap"></div>
 </section>
+
+<footer class="ftr"><img src="footer.webp" width="720" height="122" alt="© 67M &amp; Claude 2026" loading="lazy"></footer>
 </div>
 
 <!-- 🛟 POSTUP (overlay, nemění rozpracovanou obhlídku) -->
