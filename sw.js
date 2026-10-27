@@ -1,12 +1,1 @@
-// ObhlídkaEXPERT – offline cache. Při změně appky zvyšte číslo verze.
-const CACHE = "obhlidka-expert-v3";
-const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable.png", "./apple-touch-icon.png", "./footer.webp", "./logo.webp"];
-self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
-self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
-self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  e.respondWith(
-    fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
-      .catch(() => caches.match(e.request).then(m => m || caches.match("./index.html")))
-  );
-});
+Ly8gT2JobMOtZGthRVhQRVJUIOKAkyBvZmZsaW5lIGNhY2hlLiBQxZlpIHptxJtuxJsgYXBwa3kgenZ5xaF0ZSDEjcOtc2xvIHZlcnplLgpjb25zdCBDQUNIRSA9ICJvYmhsaWRrYS1leHBlcnQtdjQiOwpjb25zdCBGSUxFUyA9IFsiLi8iLCAiLi9pbmRleC5odG1sIiwgIi4vbWFuaWZlc3QuanNvbiIsICIuL2ljb24tMTkyLnBuZyIsICIuL2ljb24tNTEyLnBuZyIsICIuL2ljb24tbWFza2FibGUucG5nIiwgIi4vYXBwbGUtdG91Y2gtaWNvbi5wbmciLCAiLi9mb290ZXIud2VicCIsICIuL2xvZ28ud2VicCJdOwpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoImluc3RhbGwiLCBlID0+IHsgZS53YWl0VW50aWwoY2FjaGVzLm9wZW4oQ0FDSEUpLnRoZW4oYyA9PiBjLmFkZEFsbChGSUxFUykpKTsgc2VsZi5za2lwV2FpdGluZygpOyB9KTsKc2VsZi5hZGRFdmVudExpc3RlbmVyKCJhY3RpdmF0ZSIsIGUgPT4geyBlLndhaXRVbnRpbChjYWNoZXMua2V5cygpLnRoZW4oa3MgPT4gUHJvbWlzZS5hbGwoa3MuZmlsdGVyKGsgPT4gayAhPT0gQ0FDSEUpLm1hcChrID0+IGNhY2hlcy5kZWxldGUoaykpKSkpOyBzZWxmLmNsaWVudHMuY2xhaW0oKTsgfSk7CnNlbGYuYWRkRXZlbnRMaXN0ZW5lcigiZmV0Y2giLCBlID0+IHsKICBpZiAoZS5yZXF1ZXN0Lm1ldGhvZCAhPT0gIkdFVCIpIHJldHVybjsKICBlLnJlc3BvbmRXaXRoKAogICAgZmV0Y2goZS5yZXF1ZXN0KS50aGVuKHIgPT4geyBjb25zdCBjb3B5ID0gci5jbG9uZSgpOyBjYWNoZXMub3BlbihDQUNIRSkudGhlbihjID0+IGMucHV0KGUucmVxdWVzdCwgY29weSkpOyByZXR1cm4gcjsgfSkKICAgICAgLmNhdGNoKCgpID0+IGNhY2hlcy5tYXRjaChlLnJlcXVlc3QpLnRoZW4obSA9PiBtIHx8IGNhY2hlcy5tYXRjaCgiLi9pbmRleC5odG1sIikpKQogICk7Cn0pOwo=
