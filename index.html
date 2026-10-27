@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="cs"><head>
+<meta charset="utf-8">
+<title>ObhlídkaEXPERT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17283b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ObhlídkaEXPERT">
+<meta name="mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<style>
+/* Layout: one narrow column (phone-first), sticky header + bottom action bar, three views: Obhlídka / Okno / Výsledek */
+:root{
+  --bg:#f3f4f2; --card:#ffffff; --fg:#14202e; --muted:#5d6876; --line:#d9ddd8;
+  --accent:#d98a14; --accent-ink:#1b1204; --ink:#17283b; --ink-fg:#ffffff;
+  --ok:#2f7d4f; --ok-bg:#e3f1e8; --mid:#b26b00; --mid-bg:#fbefd9; --bad:#b8392a; --bad-bg:#f8e2de;
+  --z:#3f5f86; --z-bg:#e3eaf3;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10161d; --card:#18212b; --fg:#e8edf2; --muted:#9aa6b3; --line:#2a3644;
+  --accent:#f0a83a; --accent-ink:#1b1204; --ink:#e8edf2; --ink-fg:#10161d;
+  --ok:#6cc792; --ok-bg:#16301f; --mid:#f0b45a; --mid-bg:#33260f; --bad:#f08a7c; --bad-bg:#3a1a16;
+  --z:#8fb1d9; --z-bg:#1a2838; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10161d; --card:#18212b; --fg:#e8edf2; --muted:#9aa6b3; --line:#2a3644;
+  --accent:#f0a83a; --accent-ink:#1b1204; --ink:#e8edf2; --ink-fg:#10161d;
+  --ok:#6cc792; --ok-bg:#16301f; --mid:#f0b45a; --mid-bg:#33260f; --bad:#f08a7c; --bad-bg:#3a1a16;
+  --z:#8fb1d9; --z-bg:#1a2838; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--font);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 120px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);margin-bottom:14px}
+header.top h1{font-size:19px;margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top h1 small{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+.profi{color:var(--accent);font-weight:800;letter-spacing:.02em}
+#hTitle{display:block;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex:none}
+h2{font-size:15px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);flex:1;min-width:0}
+input[type=text],input[type=number],input[type=tel],textarea{font:inherit;font-size:18px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;width:100%}
+textarea{font-size:16px;min-height:70px;resize:vertical}
+input:focus-visible,button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:12px 14px;min-height:48px}
+.btn-main{background:var(--ink);color:var(--ink-fg);border-color:var(--ink);font-weight:700}
+.btn-acc{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn-ghost{background:transparent}
+.btn-danger{color:var(--bad);border-color:var(--bad);background:transparent}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.seg button{padding:10px 6px;font-size:15px;min-height:46px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--ink-fg);border-color:var(--ink);font-weight:700}
+.seg.wrap4{grid-auto-flow:row;grid-template-columns:repeat(2,1fr)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{min-height:38px;padding:6px 12px;font-size:14px;border-radius:999px}
+.chk{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.chk:first-child{border-top:0}
+.chk .t{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;line-height:1.2;color:var(--fg);-webkit-text-stroke:.35px currentColor}
+.chk .t .num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;-webkit-text-stroke:0}
+.chk .t.sub{font-size:15px;font-weight:700;color:var(--muted);padding-left:37px;-webkit-text-stroke:0}
+.chk .seg button{font-size:13.5px;line-height:1.15;min-height:52px}
+.chk .seg button.s1[aria-pressed=true]{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
+.chk .seg button.s2[aria-pressed=true]{background:var(--mid-bg);color:var(--mid);border-color:var(--mid)}
+.chk .seg button.s3[aria-pressed=true]{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.lepseg button[aria-pressed=true].ln{background:#ffffff;color:#17283b;border-color:#17283b;font-weight:700}
+.lepseg button[aria-pressed=true].ll{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.cg .th{background:var(--z-bg);color:var(--z);font-size:15px}
+.cprice{width:92px!important;padding:6px 8px!important;font-size:16px!important;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;background:transparent!important;border-color:transparent!important}
+.cprice:focus{border-color:var(--accent)!important;background:var(--bg)!important}
+.cprice.chg{color:var(--accent)}
+#vCenik .line .q{display:flex;align-items:center;gap:2px}
+.dims{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.dims .x{padding-bottom:14px;color:var(--muted);font-weight:700}
+.hint{font-size:12.5px;color:var(--muted)}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:48px;padding:0;font-size:22px;font-weight:700}
+.stepper output{min-width:34px;text-align:center;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.toggle{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:15px}
+.toggle input{width:24px;height:24px;accent-color:var(--accent)}
+.item{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:12px 14px}
+.item .main{flex:1;min-width:0}
+.item .nm{font-weight:700}
+.item .sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:12px;font-weight:700;border-radius:999px;padding:4px 9px;white-space:nowrap}
+.b0{background:transparent;color:var(--muted);border:1px dashed var(--muted)}
+.item.skipped{opacity:.7;border-style:dashed}
+.btn-skip{background:var(--bad);color:#fff;border-color:var(--bad);font-weight:700}
+.btn-off{opacity:.45}
+.skipnote{margin-top:12px;font-size:14px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r);padding:10px 14px}
+.b3{background:var(--bad-bg);color:var(--bad)} .b2{background:var(--mid-bg);color:var(--mid)} .b1{background:var(--z-bg);color:var(--z)}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar .in{max-width:640px;margin:0 auto;display:flex;gap:8px}
+.bar .in button{flex:1}
+/* result */
+.res-head{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.res-head .big{font-size:24px;font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 4px}
+.facts div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.facts b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.facts span{font-size:12px;color:var(--muted)}
+.tier{border-radius:var(--r);border:1px solid var(--line);background:var(--card);overflow:hidden;margin-top:12px}
+.tier .th{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;font-weight:800;font-size:17px}
+.tier.t3 .th{background:var(--bad-bg);color:var(--bad)} .tier.t2 .th{background:var(--mid-bg);color:var(--mid)} .tier.t1 .th{background:var(--z-bg);color:var(--z)}
+.tier .th small{display:block;font-size:12px;font-weight:600;opacity:.85}
+.tier .th .sum{font-variant-numeric:tabular-nums;white-space:nowrap}
+.line{display:flex;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+.line .d{flex:1;min-width:0}
+.line .d b{display:block}
+.line .d span{font-size:13px;color:var(--muted)}
+.line .q{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.line .q b{display:block}
+.line .q span{font-size:13px;color:var(--muted)}
+.none{padding:12px 14px;color:var(--muted);border-top:1px solid var(--line);font-size:14px}
+.total{margin-top:14px;background:var(--ink);color:var(--ink-fg);border-radius:var(--r);padding:14px}
+.total .lbl{font-size:13px;opacity:.8}
+.total .num{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.total .sm{font-size:13px;opacity:.85}
+.total .seg button{background:transparent;color:var(--ink-fg);border-color:color-mix(in srgb,var(--ink-fg) 40%,transparent);font-size:13.5px;min-height:44px}
+.total .seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.totrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mini{display:flex;gap:4px;opacity:.45}
+.mini button{min-height:26px;min-width:26px;padding:0 6px;font-size:11px;border-radius:6px;background:transparent;color:var(--ink-fg);border:1px solid color-mix(in srgb,var(--ink-fg) 30%,transparent)}
+.mini button[aria-pressed=true]{background:color-mix(in srgb,var(--ink-fg) 22%,transparent);font-weight:700}
+.btn-wipe{width:100%;background:var(--bad);color:#fff;border-color:var(--bad);font-weight:700}
+.wipe-ask{background:var(--bad-bg);border:1px solid var(--bad);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px;color:var(--bad);font-weight:700}
+.wipe-ask .row button{flex:1}
+details.pro{margin-top:14px}
+details.pro summary{cursor:pointer;font-weight:700;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);list-style:none}
+details.pro summary::-webkit-details-marker{display:none}
+details.pro[open] summary{border-radius:var(--r) var(--r) 0 0}
+details.pro .body{border:1px solid var(--line);border-top:0;border-radius:0 0 var(--r) var(--r);background:var(--card);padding:12px 14px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.kv b{font-variant-numeric:tabular-nums;text-align:right}
+pre.note{white-space:pre-wrap;font:inherit;font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;max-height:240px;overflow:auto}
+.warnbox{font-size:13px;color:var(--mid);background:var(--mid-bg);border-radius:10px;padding:8px 10px;margin-top:8px}
+.say{list-style:none;margin:0;padding:6px 14px 12px}
+.say li{position:relative;padding:9px 0 9px 20px;font-size:17px;line-height:1.4;border-top:1px solid var(--line)}
+.say li:first-child{border-top:0}
+.say li::before{content:"•";position:absolute;left:2px;top:7px;font-size:22px;line-height:1;font-weight:800}
+.say .v{font-weight:800;-webkit-text-stroke:.3px currentColor}
+.say .m{font-size:14px;color:var(--muted)}
+.tier.t3 .say .v,.tier.t3 .say li::before{color:var(--bad)} .tier.t2 .say .v,.tier.t2 .say li::before{color:var(--mid)} .tier.t1 .say .v,.tier.t1 .say li::before{color:var(--z)}
+#segScope button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.15;font-weight:700;min-height:58px}
+#segScope button small{font-size:12.5px;font-weight:600;opacity:.85;font-variant-numeric:tabular-nums}
+.freebox{margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--bad-bg);color:var(--bad);border:2px solid var(--bad);font-size:14.5px;line-height:1.4}
+.freebox .big{font-size:17px;-webkit-text-stroke:.3px currentColor}
+.freebox span{color:var(--fg);font-size:13.5px}
+input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!important}
+.miss{font-size:12.5px;font-weight:800;color:var(--bad);white-space:nowrap}
+.stale{background:var(--mid-bg);color:var(--fg);border:2px solid var(--mid);border-radius:var(--r);padding:12px 14px;font-size:15px;display:flex;flex-direction:column;gap:8px}
+.totwarn{margin-top:8px;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:6px 10px;font-size:13.5px;font-weight:700}
+.arch .nm{font-weight:800;font-size:17px}
+.arch .sub{font-size:13.5px;color:var(--muted);font-weight:500}
+.arch .row{margin-top:10px}
+.arch.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--ink-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:9}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media (prefers-reduced-motion:no-preference){button{transition:background .12s,border-color .12s}}
+/* ---------- 🛟 Postup ---------- */
+.btn-lb{min-height:44px;min-width:44px;padding:0 10px;font-size:22px;line-height:1;background:transparent;flex:none}
+.pov{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pov .wrap{padding-block:0 60px}
+.pov-top{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:10px;margin-bottom:12px}
+.pov-top .r1{display:flex;align-items:center;gap:8px}
+.pov-top h2{all:unset;font-size:19px;font-weight:800;flex:1}
+.pov-top .seg{margin-top:8px}
+.pov-close{min-width:48px;font-size:18px;font-weight:700}
+.pv-prog{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+.pv-prog .trk{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.pv-prog .trk i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .2s}
+.pv-prog b{font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
+.ph{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.ph.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.ph.done{opacity:.6}
+.ph-h{display:flex;gap:12px;align-items:flex-start;padding:12px 14px}
+.ph-ck{flex:none;width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;border:2px solid var(--muted);background:transparent;font-size:20px;font-weight:800;color:var(--ok)}
+.ph.done .ph-ck{background:var(--ok-bg);border-color:var(--ok)}
+.ph-m{flex:1;min-width:0}
+.ph-t{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ph-t span{font-weight:500;text-transform:none;letter-spacing:0}
+.ph-hes{font-size:17px;font-weight:800;line-height:1.3;margin-top:3px;text-wrap:pretty}
+.pov.cmp .ph-hes{font-size:21px}
+.pov.cmp .ph.done .ph-hes{font-size:15px;font-weight:600}
+/* slovník */
+.sl-it{padding:10px 14px;border-top:1px solid var(--line)}
+.sl-it:first-child{border-top:0}
+.sl-it b{display:block;font-size:16px}
+.sl-it span{font-size:14.5px;color:var(--muted)}
+.sl-it.own b::after{content:"vlastní";font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:1px 7px;margin-left:8px;vertical-align:2px}
+.sl-act{display:flex;gap:6px;margin-top:6px}
+.sl-act button{min-height:34px;padding:4px 12px;font-size:13px}
+.sl-add{margin-bottom:12px}
+.sl-add input{font-size:16px}
+/* ---------- ObhlídkaEXPERT: výrazné tlačítko Domoveo + instalační poznámka ---------- */
+#proBox{margin-top:18px}
+#proBox summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;background:#1d4f91;color:#fff;border:2px solid #f0a83a;font-size:18px;font-weight:800;letter-spacing:.01em;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+#proBox summary::after{content:"▾";font-size:20px;color:#f0a83a;transition:transform .15s}
+#proBox[open] summary{border-radius:var(--r) var(--r) 0 0}
+#proBox[open] summary::after{transform:rotate(180deg)}
+#proBox .body{border:2px solid #f0a83a;border-top:0}
+#instBox .body p{margin:0 0 8px;font-size:14.5px;line-height:1.45}
+#instBox .body p:last-child{margin-bottom:0}
+</style>
+</head><body>
+<div class="wrap">
+<header class="top"><span class="dot"></span><h1><span id="hTitle">Obhlídka<span class="profi">EXPERT</span></span><small id="hSub">servis oken · Domoveo</small></h1><button id="btnBackTop" class="btn-ghost" hidden>← Zpět</button><button id="btnPostup" class="btn-lb" aria-label="Postup prohlídky" title="Postup prohlídky">🛟</button></header>
+
+<!-- VIEW: start -->
+<section id="vStart" hidden>
+  <div class="card stack">
+    <div><b>Nová obhlídka</b><div class="hint">Stačí příjmení. Data zůstávají jen v tomto zařízení.</div></div>
+    <label class="f">Příjmení klienta<input id="inClient" type="text" autocomplete="off" placeholder="Novák"></label>
+    <label class="f">Město (nepovinné)<input id="inCity" type="text" autocomplete="off" placeholder="Náchod"></label>
+    <button id="btnStart" class="btn-acc">Začít obhlídku</button>
+    <button id="btnDemo" class="btn-ghost">Vyzkoušet s ukázkovými okny</button>
+  </div>
+  <div class="row" style="margin-top:12px"><button id="btnArch1" class="btn-ghost" style="flex:1">🗂 Archiv obhlídek</button><button id="btnLoad" class="btn-ghost" style="flex:1">📂 Načíst ze zálohy</button></div>
+  <input type="file" id="fileLoad" accept=".txt,.json,text/plain,application/json" hidden>
+  <button id="btnCenik1" class="btn-ghost" style="width:100%;margin-top:12px">Ceník služeb a dílů</button>
+  <details class="pro" id="instBox"><summary>📱 Přidat na plochu a uložení dat ▾</summary><div class="body">
+    <p><b>iPhone (Safari):</b> otevřete web v Safari → tlačítko Sdílet → <i>Přidat na plochu</i>. Pak appku spouštějte vždy z plochy.</p>
+    <p><b>Android (Chrome):</b> menu ⋮ → <i>Přidat na plochu</i> / <i>Instalovat aplikaci</i>.</p>
+    <p><b>Data jsou jen v tomto zařízení</b> (žádný server). Safari může data webu otevřeného jen v prohlížeči smazat po 7 dnech používání Safari bez návštěvy appky; z plochy se to dle Applu nemá dít. Nemažte „data webu“ v nastavení prohlížeče.</p>
+    <p><b>Po každé obhlídce</b> pošlete 📤 zálohu (Disk / e-mail) a výsledek přepište do Domovea.</p>
+  </div></details>
+</section>
+
+<!-- VIEW: archiv -->
+<section id="vArch" hidden>
+  <div class="hint" style="margin-bottom:10px">Každá obhlídka se ukládá sama a drží se 30 dní od poslední změny. Otevřením ji můžete znovu přepočítat (Minimum / Optimum / Vše) i upravit.</div>
+  <div id="archList" class="stack"></div>
+</section>
+
+<!-- VIEW: ceník -->
+<section id="vCenik" hidden>
+  <input id="cFilter" type="text" autocomplete="off" placeholder="Hledat v ceníku… (např. převodovka)">
+  <div class="hint" style="margin:8px 0 4px">Ceny včetně DPH podle ceníku Domoveo. Ťuknutím na cenu ji můžete upravit.</div>
+  <div id="cenikForm"></div>
+  <button id="btnCenikReset" class="btn-ghost" style="width:100%;margin-top:12px">Vrátit původní ceny</button>
+</section>
+
+<!-- VIEW: list -->
+<section id="vList" hidden>
+  <div id="listItems" class="stack"></div>
+  <div class="card" style="margin-top:16px">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="hint" id="listMeta"></span>
+      <button id="btnCenik2" class="btn-ghost">Ceník</button>
+      <button id="btnArch2" class="btn-ghost">🗂 Archiv</button>
+      <span id="delVisitWrap"><button id="btnDelVisit" class="btn-danger">Smazat obhlídku</button></span>
+    </div>
+  </div>
+</section>
+
+<!-- VIEW: edit -->
+<section id="vEdit" hidden>
+  <div class="stack">
+    <div class="card stack">
+      <label class="f">Označení<input id="eLabel" type="text" autocomplete="off"></label>
+      <div class="chips" id="roomChips"></div>
+    </div>
+    <div class="card stack">
+      <div class="seg wrap4" id="eType"><button data-v="kridlo">Okenní křídlo</button><button data-v="balkon">Balkonové dveře</button><button data-v="vchod">Vchodové dveře</button><button data-v="posuv">Posuvné dveře</button></div>
+      <div class="seg" id="eMat"><button data-v="plast">Plast</button><button data-v="drevo">Dřevo</button><button data-v="hlinik">Hliník</button></div>
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <span>Počet stejných kusů</span>
+        <div class="stepper"><button id="ksMinus" aria-label="Méně">−</button><output id="eKs">1</output><button id="ksPlus" aria-label="Více">+</button></div>
+      </div>
+    </div>
+    <div class="card" id="checks"></div>
+    <div class="card stack">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:10px"><span>Počet křídel</span><div class="seg" id="eKr" style="flex:1;max-width:220px"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button></div></div>
+      <div class="seg" id="eStulp" hidden><button data-v="0">Pevný sloupek</button><button data-v="1">Štulp (bez sloupku)</button></div>
+      <div class="dims">
+        <label class="f">Šířka (cm)<input id="eW" type="number" inputmode="decimal" step="0.1" min="0"></label>
+        <span class="x">×</span>
+        <label class="f">Výška (cm)<input id="eH" type="number" inputmode="decimal" step="0.1" min="0"></label>
+      </div>
+      <div class="hint" id="dimHint">Měřte celé okno (rám). Zadáte-li milimetry, appka je převede.</div>
+    </div>
+    <div class="card stack">
+      <div class="row">
+        <label class="f">Datumovka – rok<input id="eRok" type="number" inputmode="numeric" min="1980" max="2030" placeholder="např. 2012"></label>
+      </div>
+      <label class="toggle"><input id="eTroj" type="checkbox"> Těžké trojsklo (nadrozměr)</label>
+      <label class="toggle"><input id="eNar" type="checkbox"> Vyšší náročnost (vydrolené těsnění, deformace rámu)</label>
+      <label class="f">Poznámka<textarea id="eNote" placeholder="co ještě má servisák vědět…"></textarea></label>
+    </div>
+    <div class="row"><span id="delItemWrap"><button id="btnDelItem" class="btn-danger">Smazat okno</button></span></div>
+  </div>
+</section>
+
+<!-- VIEW: result -->
+<section id="vRes" hidden>
+  <div class="res-head"><span class="hint" id="rDate"></span><span class="big" id="rTitle">Výsledek obhlídky</span></div>
+  <div class="facts" id="rFacts"></div>
+  <div id="rTiers"></div>
+  <div class="total">
+    <div class="lbl">Rozsah zakázky</div>
+    <div class="seg" id="segScope" style="margin:8px 0 10px"><button data-v="3">Minimum</button><button data-v="2">Optimum</button><button data-v="1">Vše</button></div>
+    <div class="totrow"><div class="lbl">Celkem podle ceníku vč. dopravy</div><div class="mini" id="segSleva" aria-label="úprava ceny"><button data-v="0">0</button><button data-v="5">5</button><button data-v="10">10</button></div></div>
+    <div class="num" id="rTotal">0 Kč</div>
+    <div class="sm" id="rTotalSub"></div>
+    <div id="rWarn"></div>
+  </div>
+  <details class="pro" id="proBox"><summary>📋 Pro přepis do Domovea</summary><div class="body" id="rPro"></div></details>
+  <button id="btnBackup" class="btn-main" style="width:100%;margin-top:14px">📤 Poslat zálohu (Disk / e-mail)</button>
+  <div class="hint" style="margin-top:6px">Shrnutí všech tří variant + všechna okna s rozměry. Obhlídka zůstává i v 🗂 Archivu 30 dní.</div>
+  <div style="margin-top:18px" id="wipeWrap"></div>
+</section>
+</div>
+
+<!-- 🛟 POSTUP (overlay, nemění rozpracovanou obhlídku) -->
+<div class="pov" id="pov" hidden role="dialog" aria-label="Postup prohlídky">
+ <div class="wrap">
+  <div class="pov-top">
+   <div class="r1"><span style="font-size:24px">🛟</span><h2 id="povTitle">Postup prohlídky</h2><button class="pov-close btn-ghost" id="povClose" aria-label="Zavřít">✕</button></div>
+   <div class="seg" id="povTabs"><button data-v="f" aria-pressed="true">Fáze návštěvy</button><button data-v="s" aria-pressed="false">📖 Slovník</button></div>
+  </div>
+  <div id="povF"></div>
+  <div id="povS" hidden></div>
+ </div>
+</div>
+<div class="bar" id="bar"><div class="in" id="barIn"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+var KEY="expert.v1", CKEY="expert.cenik.v3";
+var CAT=[
+ {g:"Doprava",i:[["doprava","Dopravné (1× za zakázku)",400,""]]},
+ {g:"Základní servis",i:[["kridlo","Okenní křídlo",450,""],["balkon","Balkonové křídlo / dveře",619,""],["vchod","Vchodové dveře",816,"vč. seřízení zámku"],["posuv","Posuvné dveře",1547,""]]},
+ {g:"Výměna těsnění (za metr a stranu)",i:[["t_drevo","Eurookna (dřevo)",197,"vč. materiálu a práce"],["t_plast","Plastová okna",221,"vyžaduje se fotka rohu rámu · hliník zatím jako plast"]]},
+ {g:"Panty a závěsy",i:[["p_pvc","Pant spodní PVC okno",1350,"křídlo + rám + krytky · bez L/P, max. 1× foto"],["p_aubi","Pant spodní AUBI",2109,"závěs s ozubeným kolem · max. 1× foto závěsu"],["p_roto","Pant spodní ROTO UNI",1350,"náhrada, nelze-li zajistit stejný závěs · u starého kování 2× foto"],["p_sklop","Pant spodní ke sklopnému křídlu",450,"1× foto pantu"],["p_euro","Pant spodní EURO",1547,"nutno určit L/P a 2× foto závěsu"],["p_horni","Pant horní",1350,"jen otevíratelné okno · L/P a foto závěsu a rám. uzávěru"],["p_stred","Pant střední s čepem",1069,"1× foto rámového uzávěru"],["z_stred","Závěs střední přítlačný",675,"Maco nebo Roto · univerzální"],["p_vchod","Pant pro vchodové dveře",1547,"foto víčka (Simonswerk, Dr. Hahn, Jocker) + tloušťka rámu"]]},
+ {g:"Rohy a hokejky",i:[["r_roh","Roh spodní / horní",1013,"foto rohu a rámového uzávěru"],["r_zadni","Roh zadní-horní MACO nové, ROTO, WH",1350,"nutno určit typ kování"],["r_wh","Roh spodní s rám. uzávěrem (jen WH)",1069,"foto rohu a rámového uzávěru"],["r_hok","Hokejka spodní MACO staré, GU",900,"kování, šířka křídla a 1× foto rám. uzávěru"],["r_prodl","Prodloužení spodní WH vč. rám. uzávěru",591,"kování a šířka nebo výška křídla"]]},
+ {g:"Uzávěry a pojistky",i:[["u_maly","Rámový uzávěr – malý",141,"foto rámového uzávěru"],["u_velky","Rámový uzávěr – velký",450,"foto rámového uzávěru"],["u_protikus","Protikus středový na vchodové dveře",1069,"kování a foto protikusu"],["u_zabrana","Zábrana horní nebo dolní",950,"1 ks · foto staré závory"],["u_snapper","Snapper (pojistka proti průvanu)",534,"kování a foto snapperu"]]},
+ {g:"Nůžky, převodovky a opravy",i:[["n_nuzky","Nůžky – křídlová + rámová část",2756,"vč. horního rám. pantu · kování, L/P, šířka křídla, foto"],["n_prev_ok","Převodovka – okenní křídlo",2756,"standardní specifikace"],["n_prev_bal","Převodovka – balkonové dveře",2756,"kování, výška falcu a kliky, foto spodní a horní části"],["n_prev_vch","Převodovka – vchodové dveře, standard",6891,"vč. rámového uzávěru"],["n_prev_hak","Převodovka – vchodové dveře s háky",7734,"zamykání, dornmaß, lišta 16/20 mm, L/P a foto bodů"],["n_sada","Opravná sada převodovky MACO, ROTO",1828,"foto rámového uzávěru"]]},
+ {g:"Kličky a madla",i:[["klicka","Klička okenní",450,"bílá a bronzová; jiné barvy na objednávku s fotkou"],["k_zamyk","Klička okenní s uzamykáním",1350,""],["k_obou","Klička oboustranná – balkonové dveře",2756,""],["k_hlinik","Klička okenní na hliníková okna",2475,""],["k_posuv","Klička na posuv – obyčejná",2109,""],["k_posuv_a","Klička na posuv – automat",6328,""],["k_vchod","Klička vchodové dveře",2391,""],["k_madlo","Madlo",478,""]]},
+ {g:"Kompletní překování",i:[["x_kridlo","Kompletní překování okenního křídla",5670,"vč. kličky · falcová šířka a výška, výška kličky, foto"],["x_balkon","Kompletní překování balkonových dveří",6350,"vč. kličky · falcová šířka a výška, výška kličky, foto"],["x_zvednuti","Zvednutí křídla vysklením",1520,"když křídlo už nelze nastavit na pantech"]]}
+];
+var DEF_CENIK={};CAT.forEach(function(g){g.i.forEach(function(x){DEF_CENIK[x[0]]=x[2]})});
+var TYPE={kridlo:"Okenní křídlo",balkon:"Balkonové dveře",vchod:"Vchodové dveře",posuv:"Posuvné dveře"};
+var TYPE_PL={kridlo:"okenní křídlo",balkon:"balkonové dveře",vchod:"vchodové dveře",posuv:"posuvné dveře"};
+var MAT={plast:"plast",drevo:"dřevo",hlinik:"hliník"};
+var ROOMS=["Obývák","Kuchyň","Ložnice","Dětský","Pracovna","Koupelna","WC","Chodba","Schodiště","Sklep"];
+var CHECKS=[
+  {k:"kov",t:"Kování, převodovka a chod (u dveří i zámek)",o:["Lehký chod","Ztuhlé, suché","Drhne, zasekává"]},
+  {k:"tout",t:"Těsnění vnější (v rámu)",o:["Pružné","Opotřebené","Dožité"]},
+  {k:"tin",t:"Těsnění vnitřní (na křídle)",o:["Pružné","Opotřebené","Dožité"]},
+  {k:"dol",t:"3-osé centrování křídla, přítlaky",o:["Doléhá","Mírně netěsní","Drhne, netěsní"]},
+  {k:"kl",t:"Klika",o:["V pořádku","Vratká, opotřebená","Poškozená"]}
+];
+var SEV={3:"Nutné",2:"Doporučené",1:"Na zvážení",0:"Neprohlédnuto"};
+var SEV_SUB={3:"bez toho se problém zhorší",2:"prevence drahých oprav",1:"když chcete mít úplný klid"};
+
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var cenik=Object.assign({},DEF_CENIK,load(CKEY,{}));
+var S=load(KEY,null); // {client,city,typ,items:[],scope,sleva,created}
+var view="start", editId=null, draft=null;
+
+function $(id){return document.getElementById(id)}
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function kc(n){return Math.round(n).toLocaleString("cs-CZ").replace(/\s/g," ")+" Kč"}
+function m1(n){return (Math.round(n*10)/10).toLocaleString("cs-CZ",{minimumFractionDigits:1,maximumFractionDigits:1})}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function persist(){if(S){if(!S.id)S.id="o"+(S.created||Date.now());save(KEY,S);archPut()}}
+function toast(t){var x=$("toast");x.textContent=t;x.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){x.hidden=true},1800)}
+function cm(v){v=parseFloat(String(v).replace(",","."));if(!isFinite(v)||v<=0)return 0;return v>500?v/10:v}
+
+/* ---------- business rules ---------- */
+function kr(it){return Math.max(1,Math.min(3,+it.kr||1))}
+function stulp(it){return kr(it)===2&&!!it.stulp}
+/* délka těsnění (m) pro všechny kusy: out = vnější v rámu, in = vnitřní na křídlech */
+function sealLen(it,side){var w=cm(it.w),h=cm(it.h);if(!(w&&h))return 0;var n=kr(it),k=it.ks||1;
+  var sash=2*(w+n*h)/100;var frame=(n>1&&stulp(it))?2*(w+h)/100:sash;return (side==="in"?sash:frame)*k}
+function perim(it){return sealLen(it,"in")}
+function nadrW(it){var w=cm(it.w);return w?w/kr(it):0}
+function krTxt(it){var n=kr(it);return n>1?n+" křídla"+(stulp(it)?" (štulp)":""):""}
+function isSkip(it){return !!it.skip}
+function anyCheck(it){var c=it.c||{};return CHECKS.some(function(k){return c[k.k]>0})}
+function offers(it){
+  if(isSkip(it))return [];
+  var c=it.c||{},L=[];
+  var mx=Math.max(c.kov||0,c.dol||0);
+  var ss=mx===3?3:mx===2?2:1;
+  var nk=(it.ks||1)*kr(it),nkl=(it.ks||1)*(stulp(it)?1:kr(it));
+  L.push({sev:ss,kind:"servis",type:it.type,n:nk});
+  [["tin","in"],["tout","out"]].forEach(function(a){
+    var v=c[a[0]],p=sealLen(it,a[1]);
+    if(v===3)L.push({sev:3,kind:"tes",side:a[1],mat:it.mat,lep:!!it.lep,m:p,noDim:!p});
+    else if(v===2)L.push({sev:1,kind:"tes",side:a[1],mat:it.mat,lep:!!it.lep,m:p,noDim:!p});
+  });
+  if(c.kl===3)L.push({sev:2,kind:"klicka",n:nkl});
+  else if(c.kl===2)L.push({sev:1,kind:"klicka",n:nkl});
+  L.forEach(function(o){o.label=it.label});
+  return L;
+}
+function rate(o){
+  if(o.kind==="servis")return cenik[o.type]*o.n;
+  if(o.kind==="klicka")return cenik.klicka*o.n;
+  return (+cenik[o.mat==="drevo"?"t_drevo":"t_plast"])*o.m;
+}
+function isDisc(o){return o.kind==="servis"||o.kind==="tes"}
+function allOffers(){var L=[];(S.items||[]).forEach(function(it){L=L.concat(offers(it))});return L}
+function worst(it){if(isSkip(it))return 0;return offers(it).reduce(function(a,o){return Math.max(a,o.sev)},1)}
+function group(list){
+  var g={};
+  list.forEach(function(o){
+    var k=o.kind==="servis"?"s|"+o.type:o.kind==="tes"?"t|"+o.side+"|"+o.mat+"|"+(o.lep?1:0):"k";
+    if(!g[k])g[k]={kind:o.kind,type:o.type,side:o.side,mat:o.mat,lep:o.lep,n:0,m:0,price:0,labels:[],noDim:false};
+    var x=g[k];x.n+=o.n||0;x.m+=o.m||0;x.price+=rate(o);if(o.noDim)x.noDim=true;
+    if(x.labels.indexOf(o.label)<0)x.labels.push(o.label);
+  });
+  var order={s:0,t:1,k:2};
+  return Object.keys(g).sort(function(a,b){return order[a[0]]-order[b[0]]}).map(function(k){return g[k]});
+}
+function lineText(x){
+  if(x.kind==="servis")return{t:"Základní servis – "+TYPE_PL[x.type],d:"seřízení a promazání kování a převodovky, 3-osé centrování křídla, přítlaky, ošetření těsnění",q:x.n+"×"};
+  if(x.kind==="tes")return{t:"Výměna "+(x.side==="in"?"vnitřního":"vnějšího")+" těsnění – "+MAT[x.mat]+(x.lep?" (lepené)":" (nelepené)"),d:x.noDim?"⚠ u některého okna chybí rozměr":(x.mat==="hlinik"?"cena odhadem jako plast":""),q:m1(x.m)+" m"};
+  return{t:"Výměna kličky",d:"vč. montáže",q:x.n+"×"};
+}
+
+
+/* ---------- výsledek k tlumočení + rozsah Minimum / Optimum / Vše ---------- */
+var SCOPE_NM={3:"Minimum",2:"Optimum",1:"Vše"};
+var SCOPE_DESC={3:"jen základní servis",2:"servis + nutné a doporučené",1:"vše včetně preventivní výměny"};
+function inScope(o,sc){return o.kind==="servis"||(sc<3&&o.sev>=sc)}
+function who(labels,okItems){
+  var all=okItems.map(function(i){return i.label});
+  var everyone=all.length>1&&all.every(function(l){return labels.indexOf(l)>=0});
+  return everyone?"všechna okna":labels.join(", ");
+}
+function speech(list,okItems){
+  var out=[];
+  function grp(f){var L=list.filter(f),lab=[],n=0,m=0;L.forEach(function(o){n+=o.n||0;m+=o.m||0;if(lab.indexOf(o.label)<0)lab.push(o.label)});return{L:L,lab:lab,n:n,m:m}}
+  var sv=grp(function(o){return o.kind==="servis"});
+  if(sv.L.length){
+    var onlyW=sv.L.every(function(o){return o.type==="kridlo"||o.type==="balkon"});
+    var cnt=onlyW?sv.n+" "+plural(sv.n,"křídlo","křídla","křídel"):sv.n+" ks";
+    out.push('<b class="v">Základní servis</b> <span class="m">(seřízení a promazání kování a převodovky, 3-osé centrování křídla, přítlaky, ošetření těsnění silikonem)</span>: <b>'+esc(who(sv.lab,okItems))+'</b> <span class="m">· celkem '+cnt+'</span>'+(function(){var w=[];sv.L.forEach(function(o){if(o.sev===3&&w.indexOf(o.label)<0)w.push(o.label)});return w.length&&w.length<sv.lab.length?' <span class="m">· nejvíc potřebuje: '+esc(w.join(", "))+'</span>':""})());
+  }
+  [["out","vnější"],["in","vnitřní"]].forEach(function(sd){
+    var g=grp(function(o){return o.kind==="tes"&&o.side===sd[0]});
+    if(!g.L.length)return;
+    var lep=[];g.L.forEach(function(o){if(o.lep&&lep.indexOf(o.label)<0)lep.push(o.label)});
+    var ln='<b class="v">Vyměnit '+sd[1]+' těsnění</b>'+(sd[0]==="out"?' <span class="m">(v rámu)</span>':' <span class="m">(na křídle)</span>')+': <b>'+esc(who(g.lab,okItems))+'</b>';
+    if(lep.length)ln+= ' <span class="m">· lepené'+(lep.length===g.lab.length?"":": ")+(lep.length===g.lab.length?"":esc(lep.join(", ")))+'</span>';
+    if(g.L.some(function(o){return o.noDim}))ln+=' <span class="m">· ⚠ chybí rozměr</span>';
+    out.push(ln);
+  });
+  var kl=grp(function(o){return o.kind==="klicka"});
+  if(kl.L.length)out.push('<b class="v">Vyměnit kličku</b>: <b>'+esc(who(kl.lab,okItems))+'</b> <span class="m">· '+kl.n+' ks</span>');
+  return out;
+}
+/* ---------- views ---------- */
+function show(v){
+  view=v;["vStart","vList","vEdit","vRes","vCenik","vArch"].forEach(function(id){$(id).hidden=true});
+  $({start:"vStart",list:"vList",edit:"vEdit",res:"vRes",cenik:"vCenik",arch:"vArch"}[v]).hidden=false;
+  $("btnBackTop").hidden=!(v==="edit"||v==="res"||v==="cenik"||v==="arch");
+  renderHeader();renderBar();
+  if(v==="start")renderStart();if(v==="list")renderList();if(v==="edit")renderEdit();if(v==="res")renderRes();if(v==="cenik")renderCenik();if(v==="arch")renderArch();
+  window.scrollTo(0,0);
+}
+function renderHeader(){
+  var t=null,s="servis oken · Domoveo";
+  if(S&&view!=="start"){t=S.client||"Klient";s=(S.city?S.city+" · ":"")+(S.items.length)+" "+plural(S.items.length,"položka","položky","položek");}
+  if(view==="edit"){t=draft&&draft.label||"Okno";s=editId?"úprava":"nová položka";}
+  if(view==="cenik"){t="Ceník";s="služby a náhradní díly · vč. DPH";}
+  if(view==="arch"){t="Archiv";s="obhlídky za posledních 30 dní";}
+  if(t===null)$("hTitle").innerHTML='Obhlídka<span class="profi">EXPERT</span>';else $("hTitle").textContent=t;
+  $("hSub").textContent=s;
+}
+function plural(n,a,b,c){return n===1?a:(n>=2&&n<=4)?b:c}
+function renderBar(){
+  var b=$("barIn");b.innerHTML="";
+  function add(txt,cls,fn){var x=el("button",cls,txt);x.addEventListener("click",fn);b.appendChild(x)}
+  $("bar").hidden=(view==="start"||view==="cenik"||view==="arch");
+  if(view==="list"){add("+ Přidat okno","btn-main",function(){newItem()});add("Výsledek →","btn-acc",function(){var miss=noDims();if(miss.length){toast("Chybí rozměr: "+miss.join(", ")+" – doplňte");return}show("res")});}
+  if(view==="edit"){
+    if(draft&&anyCheck(draft)){add("Uložit","btn-main",function(){saveItem(false)});add("Uložit + další","btn-acc",function(){saveItem(true)});}
+    else{add("Neprohlédnuto → další","btn-skip",function(){saveItem(true,true)});add("Uložit + další","btn-acc btn-off",function(){toast("Vyplňte aspoň jednu kontrolu, nebo uložte jako Neprohlédnuto")});}
+  }
+  if(view==="res"){add("← Okna","",function(){show("list")});}
+}
+
+/* start */
+function renderStart(){}
+/* ceník */
+var cenikBack="start";
+function renderCenik(){
+  var f=$("cenikForm"),q=($("cFilter").value||"").trim().toLowerCase();f.innerHTML="";
+  CAT.forEach(function(g){
+    var items=g.i.filter(function(x){return !q||(x[1]+" "+x[3]+" "+g.g).toLowerCase().indexOf(q)>=0});
+    if(!items.length)return;
+    var t=el("div","tier cg");t.appendChild(el("div","th",'<div>'+esc(g.g)+'</div>'));
+    items.forEach(function(x){
+      var r=el("div","line");
+      r.innerHTML='<div class="d"><b>'+esc(x[1])+'</b>'+(x[3]?'<span>'+esc(x[3])+'</span>':'')+'</div>';
+      var q2=el("div","q");var i=el("input","cprice");i.type="number";i.inputMode="decimal";i.id="c_"+x[0];i.value=cenik[x[0]];
+      if(+cenik[x[0]]!==x[2])i.classList.add("chg");
+      i.addEventListener("change",function(){var v=parseFloat(i.value);cenik[x[0]]=isFinite(v)?v:x[2];i.value=cenik[x[0]];i.classList.toggle("chg",+cenik[x[0]]!==x[2]);save(CKEY,cenik)});
+      q2.appendChild(i);q2.appendChild(el("span","",'Kč'));r.appendChild(q2);t.appendChild(r);
+    });
+    f.appendChild(t);
+  });
+  if(!f.children.length)f.appendChild(el("div","card empty","Nic nenalezeno."));
+}
+$("cFilter").addEventListener("input",renderCenik);
+$("btnCenikReset").addEventListener("click",function(){cenik=Object.assign({},DEF_CENIK);save(CKEY,cenik);renderCenik();toast("Původní ceny obnoveny")});
+$("btnCenik1").addEventListener("click",function(){cenikBack="start";show("cenik")});
+function setSeg(id,v){Array.prototype.forEach.call($(id).querySelectorAll("button"),function(b){b.setAttribute("aria-pressed",String(b.dataset.v===String(v)))})}
+function segVal(id){var b=$(id).querySelector('button[aria-pressed="true"]');return b?b.dataset.v:null}
+function bindSeg(id,fn){$(id).addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;setSeg(id,b.dataset.v);if(fn)fn(b.dataset.v)})}
+$("btnStart").addEventListener("click",function(){
+  S={client:$("inClient").value.trim(),city:$("inCity").value.trim(),items:[],scope:1,sleva:0,created:Date.now()};
+  persist();wake();newItem();
+});
+
+/* list */
+function renderList(){
+  var box=$("listItems");box.innerHTML="";
+  if(S.created&&Date.now()-Math.max(S.created,S.opened||0)>8*3600e3){var st=el("div","stale",'<b>Pozor:</b> tato obhlídka je z '+esc(new Date(S.created).toLocaleDateString("cs-CZ"))+(S.client?" ("+esc(S.client)+")":"")+'. Jste u nového klienta?<br>');var sb=el("button","btn-danger","Smazat a začít novou obhlídku");sb.addEventListener("click",function(){if(confirm("Smazat starou obhlídku"+(S.client?" ("+S.client+")":"")+" a začít novou?")){S=null;try{localStorage.removeItem(KEY)}catch(e){}show("start")}});st.appendChild(sb);box.appendChild(st)}
+  if(!S.items.length){box.appendChild(el("div","card empty","Zatím žádné okno.<br>Začněte tlačítkem <b>+ Přidat okno</b>."));}
+  S.items.forEach(function(it){
+    var w=worst(it),b=el("button","card item"+(isSkip(it)?" skipped":""));
+    var hasD=cm(it.w)&&cm(it.h),dims=hasD?Math.round(cm(it.w))+"×"+Math.round(cm(it.h))+" cm":"bez rozměru";
+    b.innerHTML='<div class="main"><div class="nm">'+esc(it.label)+(!hasD&&!isSkip(it)?' <span class="miss">⚠ chybí rozměr</span>':'')+(it.ks>1?" · "+it.ks+"×":"")+'</div><div class="sub">'+esc(TYPE[it.type]+(kr(it)>1?" · "+krTxt(it):"")+" · "+MAT[it.mat]+(it.lep?" · lepené":"")+" · "+dims+(it.rok?" · r. "+it.rok:""))+'</div></div><span class="badge b'+w+'">'+SEV[w]+'</span>';
+    b.addEventListener("click",function(){editItem(it.id)});box.appendChild(b);
+  });
+  var pcs=S.items.filter(function(i){return !isSkip(i)}).reduce(function(a,i){return a+(i.ks||1)},0),nsk=S.items.filter(isSkip).length;$("listMeta").textContent=(pcs?("Prohlédnuto "+pcs+" ks"):"")+(nsk?" · neprohlédnuto "+nsk:"");
+  $("btnCenik2").onclick=function(){cenikBack="list";show("cenik")};
+  resetDel("delVisitWrap","btnDelVisit","Smazat obhlídku",function(){S=null;try{localStorage.removeItem(KEY)}catch(e){}toast("Obhlídka uzavřena – zůstává 30 dní v Archivu");show("start")});
+}
+function resetDel(wrapId,btnId,txt,fn){
+  var w=$(wrapId);w.innerHTML='<button id="'+btnId+'" class="btn-danger">'+txt+'</button>';
+  $(btnId).addEventListener("click",function(){
+    w.innerHTML='<span class="confirm"><span>Opravdu?</span><button class="btn-danger" id="'+btnId+'Y">Ano, smazat</button><button id="'+btnId+'N">Ne</button></span>';
+    $(btnId+"Y").addEventListener("click",fn);$(btnId+"N").addEventListener("click",function(){resetDel(wrapId,btnId,txt,fn)});
+  });
+}
+
+/* edit */
+function noDims(){return S.items.filter(function(i){return !isSkip(i)&&!(cm(i.w)&&cm(i.h))}).map(function(i){return i.label})}
+function nextLabel(){var mx=0;S.items.forEach(function(x){var m=/^Okno (\d+)$/.exec((x.label||"").trim());if(m)mx=Math.max(mx,+m[1])});return "Okno "+Math.max(mx+1,S.items.length+1)}
+function newItem(tpl){
+  editId=null;
+  var last=S.items[S.items.length-1];
+  draft={id:uid(),label:nextLabel(),type:tpl?tpl.type:(last?last.type:"kridlo"),mat:tpl?tpl.mat:(last?last.mat:"plast"),ks:1,w:"",h:"",rok:tpl?tpl.rok:"",troj:false,nar:false,lep:tpl?!!tpl.lep:true,note:"",c:{}};
+  show("edit");
+}
+function editItem(id){var it=S.items.filter(function(x){return x.id===id})[0];if(!it)return;editId=id;draft=JSON.parse(JSON.stringify(it));show("edit")}
+var draftOrig="";
+function renderEdit(){
+  draftOrig=JSON.stringify(draft);
+  $("eLabel").value=draft.label;
+  var rc=$("roomChips");rc.innerHTML="";
+  ROOMS.forEach(function(r){var b=el("button","",r);b.addEventListener("click",function(){var cnt=S.items.filter(function(x){return x.id!==draft.id&&x.label.indexOf(r)===0}).length;draft.label=cnt?r+" "+(cnt+1):r;$("eLabel").value=draft.label;renderHeader()});rc.appendChild(b)});
+  setSeg("eType",draft.type);setSeg("eMat",draft.mat);$("eKs").textContent=draft.ks;
+  $("eW").value=draft.w;$("eH").value=draft.h;$("eRok").value=draft.rok;$("eTroj").checked=!!draft.troj;$("eNar").checked=!!draft.nar;$("eNote").value=draft.note;
+  setSeg("eKr",String(kr(draft)));setSeg("eStulp",draft.stulp?"1":"0");$("eStulp").hidden=kr(draft)!==2;
+  dimHint();
+  var ch=$("checks");ch.innerHTML="";
+  CHECKS.forEach(function(c,ci){
+    var d=el("div","chk");d.innerHTML='<div class="t"><span class="num">'+(ci+1)+'</span>'+esc(c.t)+'</div>';
+    var sg=el("div","seg");
+    c.o.forEach(function(o,i){var b=el("button","s"+(i+1),esc(o));b.id="ck_"+c.k+"_"+(i+1);b.setAttribute("aria-pressed",String(draft.c[c.k]===i+1));
+      b.addEventListener("click",function(){draft.c[c.k]=(draft.c[c.k]===i+1)?null:i+1;Array.prototype.forEach.call(sg.children,function(x,j){x.setAttribute("aria-pressed",String(draft.c[c.k]===j+1))});renderBar()});sg.appendChild(b)});
+    d.appendChild(sg);ch.appendChild(d);
+    if(c.k==="tin"){
+      var lp=el("div","chk");lp.innerHTML='<div class="t sub">↳ Typ těsnění <span style="font-weight:500">(výchozí: lepené)</span></div>';
+      var ls=el("div","seg lepseg");
+      [["0","Nelepené","ln"],["1","Lepené","ll"]].forEach(function(o){var b=el("button",o[2],o[1]);b.id="lep_"+o[0];b.setAttribute("aria-pressed",String((draft.lep?"1":"0")===o[0]));
+        b.addEventListener("click",function(){draft.lep=o[0]==="1";Array.prototype.forEach.call(ls.children,function(x){x.setAttribute("aria-pressed",String(x.id==="lep_"+(draft.lep?"1":"0")))})});ls.appendChild(b)});
+      lp.appendChild(ls);ch.appendChild(lp);
+    }
+  });
+  if(editId){$("delItemWrap").hidden=false;resetDel("delItemWrap","btnDelItem","Smazat okno",function(){S.items=S.items.filter(function(x){return x.id!==editId});persist();toast("Okno smazáno");show("list")});}
+  else $("delItemWrap").hidden=true;
+}
+function dimHint(){
+  var w=cm($("eW").value),h=cm($("eH").value),n=kr(draft),t="Měřte celé okno (rám). Zadáte-li milimetry, appka je převede.";
+  if(w&&h){var d={w:w,h:h,kr:n,stulp:draft.stulp,ks:1},ks=draft.ks>1?" × "+draft.ks+" ks":"";
+    if(n===1){var p=sealLen(d,"in");t="Obvod "+m1(p)+" m"+(draft.ks>1?ks+" = "+m1(p*draft.ks)+" m":"");}
+    else{var fr=sealLen(d,"out"),sa=sealLen(d,"in");t="Rám (vnější) "+m1(fr)+" m · Křídla (vnitřní) "+m1(sa)+" m"+(draft.ks>1?ks+" = "+m1(fr*draft.ks)+" / "+m1(sa*draft.ks)+" m":"")+" · křídlo cca "+Math.round(w/n)+" × "+Math.round(h)+" cm";}
+    if(w/n>130)t+=" · nadrozměr (křídlo nad 130 cm)";}
+  $("dimHint").textContent=t;
+}
+["eW","eH"].forEach(function(id){$(id).addEventListener("input",function(){draft[id==="eW"?"w":"h"]=$(id).value;$(id).classList.remove("need");dimHint()})});
+$("eLabel").addEventListener("input",function(){draft.label=$("eLabel").value;renderHeader()});
+$("eRok").addEventListener("input",function(){draft.rok=$("eRok").value});
+$("eTroj").addEventListener("change",function(){draft.troj=$("eTroj").checked});
+$("eNar").addEventListener("change",function(){draft.nar=$("eNar").checked});
+$("eNote").addEventListener("input",function(){draft.note=$("eNote").value});
+bindSeg("eType",function(v){draft.type=v});bindSeg("eKr",function(v){draft.kr=+v;if(+v!==2)draft.stulp=false;setSeg("eStulp",draft.stulp?"1":"0");$("eStulp").hidden=+v!==2;dimHint()});bindSeg("eStulp",function(v){draft.stulp=v==="1";dimHint()});bindSeg("eMat",function(v){draft.mat=v});
+$("ksMinus").addEventListener("click",function(){draft.ks=Math.max(1,draft.ks-1);$("eKs").textContent=draft.ks;dimHint()});
+$("ksPlus").addEventListener("click",function(){draft.ks=Math.min(30,draft.ks+1);$("eKs").textContent=draft.ks;dimHint()});
+function saveItem(another,skip){
+  draft.label=(draft.label||"").trim()||nextLabel();
+  var dup=S.items.some(function(x){return x.id!==draft.id&&x.label.trim().toLowerCase()===draft.label.toLowerCase()});
+  if(dup){toast("Označení „"+draft.label+"“ už máte – přidejte číslo (např. "+draft.label+" 2)");$("eLabel").focus();return}
+  if(!skip&&!anyCheck(draft)){toast("Vyplňte aspoň jednu kontrolu, nebo uložte jako Neprohlédnuto");return}
+  if(!skip){var dw=cm(draft.w),dh=cm(draft.h);
+    if(!dw||!dh){toast("Chybí rozměr okna – zadejte šířku i výšku");var f=!dw?$("eW"):$("eH");f.classList.add("need");f.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(function(){f.focus()},350);return}
+    if((dw<25||dh<25||dw>400||dh>400)&&!confirm("Rozměr "+Math.round(dw)+" × "+Math.round(dh)+" cm vypadá neobvykle.\nOpravdu uložit?"))return;}
+  draft.skip=!!skip;
+  if(editId){S.items=S.items.map(function(x){return x.id===editId?draft:x})}else S.items.push(draft);
+  persist();toast((skip?"Neprohlédnuto: ":"Uloženo: ")+draft.label);
+  if(another){newItem({type:draft.type,mat:draft.mat,rok:draft.rok,lep:draft.lep})}else show("list");
+}
+
+/* result */
+function renderRes(){
+  var d=new Date();$("rDate").textContent=d.toLocaleDateString("cs-CZ")+(S.city?" · "+S.city:"");
+  $("rTitle").textContent="Výsledek obhlídky"+(S.client?" – "+S.client:"");
+  var pieces=S.items.filter(function(i){return !isSkip(i)}).reduce(function(a,i){return a+(i.ks||1)},0);
+  var skipped=S.items.filter(isSkip).map(function(i){return i.label});
+  var years=S.items.map(function(i){return parseInt(i.rok,10)}).filter(function(y){return y>1900});
+  var oldest=years.length?Math.min.apply(null,years):null;
+  var all=allOffers(),nIss=all.filter(function(o){return o.sev>=2}).length;
+  $("rFacts").innerHTML='<div><b>'+pieces+'</b><span>zkontrolováno kusů</span></div><div><b>'+(oldest||"–")+'</b><span>'+(oldest?"nejstarší okno ("+(d.getFullYear()-oldest)+" let)":"rok nezjištěn")+'</span></div><div><b>'+nIss+'</b><span>nálezů k řešení</span></div>';
+  var tiers=$("rTiers");tiers.innerHTML="";
+  var sl=S.sleva||0,tierSum={};
+  var okItems=S.items.filter(function(i){return !isSkip(i)});
+  var svAll=all.filter(function(o){return o.kind==="servis"});
+  var svTier=Math.max(2,svAll.reduce(function(a,o){return Math.max(a,o.sev)},0));
+  [3,2,1].forEach(function(sv){
+    var list=all.filter(function(o){return o.kind!=="servis"&&o.sev===sv});
+    if(sv===svTier)list=svAll.concat(list);
+    var t=el("div","tier t"+sv);
+    t.innerHTML='<div class="th"><div>'+SEV[sv]+'<small>'+SEV_SUB[sv]+'</small></div></div>';
+    var sp=speech(list,okItems);
+    if(!sp.length)t.appendChild(el("div","none",sv===3?"Nic nutného — výborná zpráva.":"Nic."));
+    else{var ul=el("ul","say");sp.forEach(function(x){var li=el("li","",x);ul.appendChild(li)});t.appendChild(ul)}
+    tiers.appendChild(t);
+  });
+  if(skipped.length)tiers.appendChild(el("div","skipnote","Neprohlédnuto (nezapočítáno): "+esc(skipped.join(", "))));
+  var sc=+(S.scope||1);if(!(sc>=1&&sc<=3))sc=1;
+  setSeg("segScope",sc);setSeg("segSleva",sl);
+  function sumOf(k){var L=all.filter(function(o){return inScope(o,k)});var x=L.reduce(function(a,o){return a+rate(o)*(isDisc(o)?(1-sl/100):1)},0);return{L:L,sub:x,tot:L.length?x+ +cenik.doprava:0}}
+  [3,2,1].forEach(function(k){var bt=$("segScope").querySelector('button[data-v="'+k+'"]');if(bt)bt.innerHTML=SCOPE_NM[k]+'<small>'+kc(sumOf(k).tot)+'</small>'});
+  var cur=sumOf(sc),inc=cur.L,sub=cur.sub,tot=cur.tot;
+  $("rTotal").textContent=kc(tot);
+  $("rTotalSub").textContent=inc.length?(SCOPE_DESC[sc]+" · služby "+kc(sub)+" + dopravné "+kc(cenik.doprava)):"Žádná položka.";
+  var wr=[];if(sl)wr.push("Je zapnutá sleva "+sl+" % (servis a těsnění)");
+  var chg=[];CAT.forEach(function(g){g.i.forEach(function(x){if(+cenik[x[0]]!==x[2])chg.push(x[1]+" "+kc(+cenik[x[0]])+" (ceník "+kc(x[2])+")")})});
+  if(chg.length)wr.push("Upravený ceník: "+chg.join(", "));
+  $("rWarn").innerHTML=wr.map(function(t){return '<div class="totwarn">⚠ '+esc(t)+'</div>'}).join("");
+  renderPro(inc);
+  wipeBtn();
+}
+bindSeg("segScope",function(v){S.scope=+v;persist();renderRes()});
+bindSeg("segSleva",function(v){S.sleva=+v;persist();renderRes()});
+function renderPro(inc){
+  var g=group(inc),box=$("rPro"),h="";
+  var mats=[];S.items.forEach(function(i){if(mats.indexOf(MAT[i.mat])<0)mats.push(MAT[i.mat])});
+  h+='<div class="kv"><span>Materiál</span><b>'+esc(mats.join(" + ")||"–")+'</b></div>';
+  ["kridlo","balkon","vchod","posuv"].forEach(function(t){var x=g.filter(function(y){return y.kind==="servis"&&y.type===t})[0];if(x)h+='<div class="kv"><span>'+TYPE[t]+'</span><b>'+x.n+' ks</b></div>'});
+  // těsnění: co do kolonky Těsnění (dominantní varianta) a co do Volné položky
+  sealPlan().forEach(function(p){
+    h+='<div class="kv"><span>Těsnění – '+MAT[p.mat]+' ('+(p.lep?"lepené":"nelepené")+') → kolonka Těsnění</span><b>'+SIDE_NM[p.dom]+'<br>'+m1(p.main)+' m</b></div>';
+    p.free.forEach(function(f){
+      h+='<div class="freebox">⚠ Do <b>Volné položky</b> zadej:<br><b class="big">'+esc(f.txt)+': '+kc(f.pm)+'/m × '+m1(f.m)+' m</b><br><span>= '+kc(f.pm*f.m)+' · okna: '+esc(f.labels.join(", "))+'</span></div>';
+    });
+  });
+  var kl=g.filter(function(y){return y.kind==="klicka"})[0];if(kl)h+='<div class="kv"><span>Klička</span><b>'+kl.n+' ks</b></div>';
+  var nadr=S.items.filter(function(i){return !isSkip(i)&&(nadrW(i)>130||i.troj)}).map(function(i){return i.label});
+  var nar=S.items.filter(function(i){return i.nar}).map(function(i){return i.label});
+  h+='<div class="kv"><span>Nadrozměr</span><b>'+(nadr.length?esc(nadr.join(", ")):"ne")+'</b></div>';
+  var sk=S.items.filter(isSkip).map(function(i){return i.label});
+  if(sk.length)h+='<div class="kv"><span>Neprohlédnuto</span><b>'+esc(sk.join(", "))+'</b></div>';
+  h+='<div class="kv"><span>Vyšší náročnost</span><b>'+(nar.length?esc(nar.join(", ")):"ne")+'</b></div>';
+  h+='<div style="margin-top:10px;font-weight:700">Text do poznámky</div><pre class="note" id="noteTxt">'+esc(noteText())+'</pre><button class="btn-main" id="btnCopy" style="width:100%">Zkopírovat poznámku</button>';
+  box.innerHTML=h;
+  $("btnCopy").addEventListener("click",function(){
+    var t=noteText();
+    function fb(){var r=document.createRange();r.selectNodeContents($("noteTxt"));var s=getSelection();s.removeAllRanges();s.addRange(r);toast("Text označen – zkopírujte ho")}
+    try{navigator.clipboard.writeText(t).then(function(){toast("Zkopírováno")},fb)}catch(e){fb()}
+  });
+}
+function wipeBtn(){
+  var w=$("wipeWrap");
+  w.innerHTML='<button class="btn-wipe" id="btnWipe">Vymazat celý zápis</button>';
+  $("btnWipe").addEventListener("click",function(){
+    w.innerHTML='<div class="wipe-ask">Vymazat obhlídku z obrazovky? Zůstane 30 dní v 🗂 Archivu.<div class="row"><button class="btn-wipe" id="wipeY">Ano, vymazat</button><button id="wipeN">Ne</button></div></div>';
+    $("wipeY").addEventListener("click",function(){S=null;try{localStorage.removeItem(KEY)}catch(e){}toast("Zápis uzavřen – zůstává 30 dní v Archivu");show("start")});
+    $("wipeN").addEventListener("click",wipeBtn);
+  });
+}
+var SIDE_NM={both:"Vnější i vnitřní",out:"Vnější",inn:"Vnitřní"};
+/* per okno: jaké těsnění se mění v aktuálním rozsahu */
+function sealSides(i){var sc=+(S.scope||1),os=offers(i).filter(function(o){return o.kind==="tes"&&inScope(o,sc)});
+  var hi=os.some(function(o){return o.side==="in"}),ho=os.some(function(o){return o.side==="out"});return hi&&ho?"both":ho?"out":hi?"inn":""}
+/* skupiny materiál+lepené: dominantní varianta do kolonky, zbytek do volné položky */
+function sealPlan(){
+  var res=[];
+  [["plast",0],["plast",1],["drevo",0],["drevo",1],["hlinik",0],["hlinik",1]].forEach(function(pr){
+    var B=0,I=0,O=0,lab={both:[],out:[],inn:[]},wins=[];
+    S.items.filter(function(i){return !isSkip(i)&&i.mat===pr[0]&&(i.lep?1:0)===pr[1]}).forEach(function(i){
+      var sd=sealSides(i);if(!sd)return;var pi=sealLen(i,"in"),po=sealLen(i,"out");lab[sd].push(i.label);wins.push({i:i,sd:sd});
+      if(sd==="both"){var mn=Math.min(pi,po);B+=mn;if(pi>po)I+=pi-mn;else O+=po-mn}else if(sd==="inn")I+=pi;else O+=po;
+    });
+    if(!(B||I||O))return;
+    var opts=[{dom:"both",cost:I+O},{dom:"out",cost:I+B},{dom:"inn",cost:O+B}].filter(function(x){return x.dom!=="both"||B>0});
+    opts.sort(function(a,b){return a.cost-b.cost});var dom=opts[0].dom;
+    var pm=+cenik[pr[0]==="drevo"?"t_drevo":"t_plast"],nm=MAT[pr[0]]+(pr[1]?" (lepené)":"");
+    var p={mat:pr[0],lep:pr[1],dom:dom,free:[],exc:[]};
+    function fr(side,m,labels){if(m>0.05)p.free.push({txt:"Výměna "+(side==="out"?"vnějšího":"vnitřního")+" těsnění – "+nm,pm:pm,m:m,labels:labels})}
+    if(dom==="both"){p.main=B;fr("out",O,lab.out.concat(O>0&&!lab.out.length?lab.both:[]));fr("in",I,lab.inn.concat(I>0&&!lab.inn.length?lab.both:[]));p.exc=lab.out.concat(lab.inn)}
+    else if(dom==="out"){p.main=O+B;fr("in",I+B,lab.inn.concat(lab.both));p.exc=lab.inn.concat(lab.both)}
+    else{p.main=I+B;fr("out",O+B,lab.out.concat(lab.both));p.exc=lab.out.concat(lab.both)}
+    res.push(p);
+  });
+  return res;
+}
+function noteText(){
+  var sc=+(S.scope||1),exc=[];sealPlan().forEach(function(p){exc=exc.concat(p.exc)});
+  var top=[],mid=[],end=[];
+  S.items.forEach(function(i){
+    var nm=i.label+(i.ks>1?" ("+i.ks+" ks)":"")+(kr(i)>1?" ["+krTxt(i)+"]":"")+(i.mat!=="plast"?" – "+MAT[i.mat]:"");
+    if(isSkip(i)){end.push(nm+": bez servisu (neprohlédnuto)");return}
+    var os=offers(i).filter(function(o){return inScope(o,sc)}),sd=sealSides(i),lep=i.lep&&sd?" (lepené)":"";
+    var tes=sd==="both"?"VYMĚNIT VNĚJŠÍ I VNITŘNÍ TĚSNĚNÍ"+lep:sd==="out"?"VNĚJŠÍ TĚSNĚNÍ"+lep:sd==="inn"?"VNITŘNÍ TĚSNĚNÍ"+lep:"";
+    var kl=os.some(function(o){return o.kind==="klicka"})?"VYMĚNIT KLIČKU":"";
+    var flags=[];if(nadrW(i)>130||i.troj)flags.push("NADROZMĚR");if(i.nar)flags.push("vyšší náročnost");if(i.note)flags.push("pozn.: "+i.note);
+    var isExc=exc.indexOf(i.label)>=0&&(sd==="out"||sd==="inn");
+    var parts;
+    if(isExc)parts=["POUZE vyměnit "+tes,"základní servis"];
+    else{parts=["základní servis"];if(tes)parts.push(sd==="both"?tes:"VYMĚNIT "+tes)}
+    if(kl)parts.push(kl);
+    var line=nm+(isExc?" – ":": ")+parts.join(" + ")+(flags.length?" · "+flags.join(" · "):"");
+    if(isExc)top.push("🔴 "+line);else if(flags.length)top.push("⚠ "+line);else mid.push(line);
+  });
+  return "Obhlídka "+new Date().toLocaleDateString("cs-CZ")+" · rozsah: "+SCOPE_NM[sc]+"\n"+top.concat(mid,end).join("\n");
+}
+
+$("btnDemo").addEventListener("click",function(){
+  S={demo:true,client:"Ukázka – Novák",city:"Náchod",items:[
+    {id:uid(),label:"Obývák",type:"kridlo",mat:"plast",ks:2,w:"120",h:"150",rok:"2011",troj:false,nar:false,note:"",lep:false,c:{tin:2,tout:3,kov:2,dol:1,kl:1}},
+    {id:uid(),label:"Balkon",type:"balkon",mat:"plast",ks:1,w:"90",h:"220",rok:"2011",troj:false,nar:false,note:"klient si stěžuje na průvan",lep:true,c:{tin:3,tout:3,kov:3,dol:3,kl:2}},
+    {id:uid(),label:"Kuchyň",type:"kridlo",mat:"plast",ks:1,w:"100",h:"120",rok:"2011",troj:false,nar:false,note:"",lep:false,c:{tin:1,tout:2,kov:2,dol:1,kl:3}},
+    {id:uid(),label:"Ložnice",type:"kridlo",mat:"plast",ks:1,w:"140",h:"150",rok:"2014",troj:false,nar:false,note:"",c:{tin:1,tout:1,kov:1,dol:1,kl:1}},
+    {id:uid(),label:"Okno 5",type:"kridlo",mat:"plast",ks:1,w:"",h:"",rok:"",troj:false,nar:false,note:"klient nechtěl",skip:true,c:{}}
+  ],scope:1,sleva:0,created:Date.now()};persist();show("res");toast("Načtena ukázka – smažete ji v seznamu oken");
+});
+$("btnBackTop").addEventListener("click",function(){if(view==="arch"){show(archBack==="list"&&S?"list":"start")}else if(view==="cenik"){show(S&&cenikBack==="list"?"list":(S?"list":"start"))}else if(view==="edit"&&draft&&JSON.stringify(draft)!==draftOrig){if(confirm("„"+(draft.label||"Okno")+"“ není uložené.\nZahodit změny a odejít?"))show("list")}else show("list")});
+
+
+/* ---------- 🗂 Archiv (30 dní) + 📤 záloha ---------- */
+var AKEY="expert.archiv.v1",ADAYS=30,archBack="start",MARK="===== ZALOHA PRO NACTENI DO APPKY (neupravovat) =====";
+function archLoad(){var a=load(AKEY,[]);if(!Array.isArray(a))a=[];var lim=Date.now()-ADAYS*864e5;var b=a.filter(function(e){return e&&e.upd>lim&&e.data&&Array.isArray(e.data.items)});if(b.length!==a.length)save(AKEY,b);return b}
+function archPut(){
+  if(!S||S.demo||!S.items||!S.items.length)return;
+  var a=archLoad().filter(function(e){return e.id!==S.id});a.unshift({id:S.id,upd:Date.now(),data:JSON.parse(JSON.stringify(S))});if(a.length>200)a=a.slice(0,200);
+  try{localStorage.setItem(AKEY,JSON.stringify(a))}catch(e){if(!archPut._w){archPut._w=1;toast("⚠ Archiv je plný – smažte staré obhlídky")}}
+}
+function krid(d){return (d.items||[]).filter(function(i){return !i.skip}).reduce(function(a,i){return a+(i.ks||1)*Math.max(1,+i.kr||1)},0)}
+function fmtD(t){var d=new Date(t);return d.toLocaleDateString("cs-CZ")+" "+d.toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"})}
+function renderArch(){
+  var box=$("archList"),a=archLoad();box.innerHTML="";
+  if(!a.length){box.appendChild(el("div","card empty","Archiv je prázdný.<br>Každá obhlídka se sem ukládá sama a drží se "+ADAYS+" dní."));return}
+  a.forEach(function(e){
+    var d=e.data,left=Math.max(0,Math.ceil((e.upd+ADAYS*864e5-Date.now())/864e5)),cur=S&&S.id===e.id;
+    var c=el("div","card arch"+(cur?" cur":""));
+    c.innerHTML='<div class="nm">'+esc(d.client||"Bez jména")+(d.city?' <span class="sub">· '+esc(d.city)+'</span>':'')+(cur?' <span class="badge b1">otevřená</span>':'')+'</div>'+
+      '<div class="sub">'+fmtD(d.created||e.upd)+' · '+d.items.length+' '+plural(d.items.length,"položka","položky","položek")+' · '+krid(d)+' '+plural(krid(d),"křídlo","křídla","křídel")+'</div>'+
+      '<div class="sub">smaže se za '+left+' '+plural(left,"den","dny","dní")+'</div>';
+    var r=el("div","row"),o=el("button","btn-acc","Otevřít"),x=el("button","btn-danger","Smazat");o.style.flex="1";
+    o.addEventListener("click",function(){S=JSON.parse(JSON.stringify(d));S.opened=Date.now();save(KEY,S);toast("Otevřeno z Archivu: "+(d.client||"obhlídka"));show("res")});
+    x.addEventListener("click",function(){if(!confirm("Smazat z Archivu obhlídku "+(d.client||"")+" ("+fmtD(d.created||e.upd)+")?"))return;save(AKEY,archLoad().filter(function(y){return y.id!==e.id}));if(cur){S=null;try{localStorage.removeItem(KEY)}catch(er){}}toast("Smazáno z Archivu");renderArch();renderHeader()});
+    r.appendChild(o);r.appendChild(x);c.appendChild(r);box.appendChild(c);
+  });
+}
+function goArch(from){archBack=from;show("arch")}
+/* záloha: čitelné shrnutí + data pro načtení */
+function scopeTotal(k){var sl=S.sleva||0,L=allOffers().filter(function(o){return inScope(o,k)});var x=L.reduce(function(a,o){return a+rate(o)*(isDisc(o)?(1-sl/100):1)},0);return L.length?x+ +cenik.doprava:0}
+function itemLine(i){
+  if(isSkip(i))return "• "+i.label+" – NEPROHLÉDNUTO";
+  var c=i.c||{},bits=[];CHECKS.forEach(function(k){var v=c[k.k];if(v)bits.push(k.t.split(" (")[0]+": "+k.o[v-1].toLowerCase())});
+  return "• "+i.label+(i.ks>1?" ("+i.ks+" ks)":"")+" – "+TYPE_PL[i.type]+(kr(i)>1?", "+krTxt(i):"")+", "+MAT[i.mat]+", "+Math.round(cm(i.w))+"×"+Math.round(cm(i.h))+" cm"+(i.rok?", r. "+i.rok:"")+", těsnění "+(i.lep?"lepené":"nelepené")+"\n    "+bits.join(" · ")+(i.troj?" · trojsklo":"")+(i.nar?" · vyšší náročnost":"")+(i.note?"\n    pozn.: "+i.note:"");
+}
+function backupText(){
+  var L=["ObhlídkaEXPERT – záloha obhlídky","Klient: "+(S.client||"–")+(S.city?" · "+S.city:"")+" · obhlídka "+fmtD(S.created||Date.now()),"","VARIANTY (vč. dopravného):"];
+  [3,2,1].forEach(function(k){L.push("• "+SCOPE_NM[k]+": "+kc(scopeTotal(k))+" ("+SCOPE_DESC[k]+")"+(+(S.scope||1)===k?"  ← zvoleno na místě":""))});
+  if(S.sleva)L.push("  (se slevou "+S.sleva+" % na servis a těsnění)");
+  L.push("","OKNA:");S.items.forEach(function(i){L.push(itemLine(i))});
+  L.push("","POZNÁMKA PRO TECHNIKA (rozsah "+SCOPE_NM[+(S.scope||1)]+"):",noteText(),"","Načtení: ObhlídkaEXPERT → úvod → „Načíst ze zálohy“ → vyberte tento soubor.","",MARK,JSON.stringify(S));
+  return L.join("\n");
+}
+function slug(s){return String(s||"obhlidka").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_|_$/g,"")||"obhlidka"}
+function shareBackup(){
+  var txt=backupText(),d=new Date(S.created||Date.now()),name="ObhlidkaEXPERT_"+slug(S.client)+"_"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".txt";
+  function dl(){var u=URL.createObjectURL(new Blob([txt],{type:"text/plain"})),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},1000);toast("Záloha stažena: "+name)}
+  try{var f=new File([txt],name,{type:"text/plain"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:name,text:"Záloha obhlídky – "+(S.client||"")}).then(function(){toast("Záloha odeslána")},function(e){if(!e||e.name!=="AbortError")dl()});return}
+  }catch(e){}
+  dl();
+}
+function loadBackup(file){
+  var r=new FileReader();
+  r.onload=function(){
+    var t=String(r.result||""),i=t.indexOf(MARK),j=i>=0?t.slice(i+MARK.length):t,o=null;
+    try{o=JSON.parse(j.trim())}catch(e){}
+    if(!o||!Array.isArray(o.items)){toast("Tohle není záloha z ObhlídkaEXPERT");return}
+    if(!o.id)o.id="o"+(o.created||Date.now());delete o.demo;
+    S=o;S.opened=Date.now();save(KEY,S);archPut();toast("Záloha načtena: "+(S.client||"obhlídka"));show("res");
+  };
+  r.readAsText(file);
+}
+$("btnArch1").addEventListener("click",function(){goArch("start")});
+$("btnArch2").addEventListener("click",function(){goArch("list")});
+$("btnLoad").addEventListener("click",function(){$("fileLoad").value="";$("fileLoad").click()});
+$("fileLoad").addEventListener("change",function(){if(this.files&&this.files[0])loadBackup(this.files[0])});
+$("btnBackup").addEventListener("click",shareBackup);
+if(S&&!S.demo&&S.items&&S.items.length){if(!S.id){S.id="o"+(S.created||Date.now());save(KEY,S)}if(!archLoad().some(function(e){return e.id===S.id}))archPut()}
+
+/* wake lock (optional) */
+var wl=null;function wake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){wl=l},function(){})}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&S)wake()});
+
+/* example content for first view when nothing is stored */
+show(S?"list":"start");
+if(S)wake();
+})();
+</script>
+<script>
+/* ---------- 🛟 Postup prohlídky + 📖 Slovník (samostatný modul) ---------- */
+(function(){
+"use strict";
+var PD={"faze": [{"n": 0, "t": "Před zazvoněním", "m": "v autě, 2 min", "h": "Kdo rozhoduje? Co ho trápí? Návleky, tablet, laser."}, {"n": 1, "t": "Příchod a představení", "m": "0–3 min", "h": "Úsměv, ověřit klienta, kdo jsme – krátce. Pak: Kde vás to trápí nejvíc?"}, {"n": 2, "t": "Jak to bude probíhat", "m": "1 min", "h": "Projdu všechna okna – co najdu, ukážu – vy posoudíte, jestli to dává smysl."}, {"n": 3, "t": "Diagnostika okna – 4 kroky", "m": "10–12 min", "h": "Kování → těsnění → centrování → přítlak. Klient si to osahá sám."}, {"n": 4, "t": "Obchůzka ostatních oken + měření", "m": "8–10 min", "h": "Každé okno: otevřít/zavřít, osahat těsnění, změřit, nafotit rohy, diktovat."}, {"n": 5, "t": "Výsledek šetření („ortel“)", "m": "5 min", "h": "Uklidnit → nález ve 3 úrovních → Dává vám to smysl? → ticho."}, {"n": 6, "t": "Cena a poctivost", "m": "2 min", "h": "Cena podle ceníku. Co se může zkomplikovat, řeknu dopředu."}, {"n": 7, "t": "Zápis do Domovea a termín", "m": "5 min", "h": "Údaje → e-mail → souhlasy → podpis → termín hned s klientem."}, {"n": 8, "t": "Doporučení", "m": "3–5 min", "h": "Spokojenost → prosba → kdo vás napadl první? → vizitka / opt-in."}, {"n": 9, "t": "Rozloučení a po odchodu", "m": "2 min", "h": "Poděkovat, termín zopakovat. V autě: fotky? poznámka pro technika? smazat obhlídku."}], "slov": [["Rám", "pevná část zabudovaná ve zdi"], ["Křídlo", "otevírací část okna (jedno okno může mít víc křídel)"], ["Falc (polodrážka)", "„schod“ po obvodu rámu/křídla, kam křídlo dosedá a kde je těsnění"], ["Kování", "celý mechanismus v drážce: převodovka, táhla, rohové převody, panty, uzávěry"], ["Převodovka", "díl pod klikou – převádí otočení kliky na pohyb táhel; 99 % lidí ji nemaže"], ["Planžeta / táhlo", "kovová lišta v drážce křídla, posouvá uzavírací čepy"], ["Rohový převod", "díl v rohu křídla, který „převede“ pohyb táhla za roh"], ["Nůžky", "horní kování, které drží křídlo při sklápění (ventilace)"], ["Pant / závěs", "spodní a horní uložení křídla; spodní nese celou váhu"], ["Uzavírací čep (excentr)", "„váleček“ na křídle; jeho natočením se nastavuje přítlak"], ["Protikus / rámový uzávěr", "plíšek na rámu, do kterého čep zajede"], ["Přítlak", "jak silně křídlo tlačí na těsnění; „mělký přítlak“ = jde moc lehce, nedoléhá"], ["Letní / zimní režim", "slabší / silnější přítlak natočením čepů"], ["3-osé centrování", "vyrovnání křídla vertikálně, horizontálně a diagonálně"], ["Těsnění vnější / vnitřní", "gumový pásek v rámu / na křídle; nové je „vlhké“, staré „jako papír“"], ["Lepené × nelepené", "lepené nejde rozumnou silou vytáhnout – technik ho vyšťourá a lepí"], ["Zasklívací lišta", "lišta, která drží sklo v křídle"], ["Distanční rámeček", "lišta mezi skly – často na ní bývá datum výroby"], ["Datumovka", "datum výroby okna (rámeček mezi skly, potisk v rámu, nálepka)"], ["Mikroventilace", "pootočení kliky do mezipolohy – křídlo se jen nepatrně pootevře"], ["Pojistka chybné manipulace", "brání otočení kliky, když je křídlo otevřené"], ["Snapper", "pojistka proti průvanu (drží otevřené křídlo)"], ["Hokejka", "spodní díl kování u starších MACO a GU"], ["Vysklení / zvednutí křídla", "když už křídlo nejde nastavit na pantech"], ["Nadrozměr", "křídlo nad 130 cm šířky nebo těžké trojsklo"], ["Štulp (štulpové okno)", "dvoukřídlé okno bez pevného sloupku uprostřed; po otevření obou křídel vznikne velký volný otvor"], ["Štulpová lišta", "svislá lišta přišroubovaná na boku pasivního křídla – zakrývá spáru mezi křídly a druhé křídlo na ni dovírá; má vlastní pruh těsnění po celé výšce"], ["Pasivní křídlo", "křídlo se štulpovou lištou – nemá kliku, jen páčku na boku; otevře se až po otevření křídla s klikou"], ["Sloupek (pevný)", "svislá příčka rámu mezi křídly – každé křídlo má svůj otvor a těsnění v rámu jde kolem každého zvlášť"]]};
+var PK="expert.postup.v1", SK="expert.slovnik.v1", RESET_H=4;
+function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function toast(t){var x=$("toast");if(!x)return;x.textContent=t;x.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){x.hidden=true},2000)}
+var P=ld(PK,{done:[],cmp:false,tab:"f",ts:0});
+var OWN=ld(SK,[]);
+var editIdx=-1, delIdx=-1;
+var N=PD.faze.length;
+
+function savP(){sv(PK,P)}
+function isDone(n){return P.done.indexOf(n)>=0}
+function curPhase(){for(var i=0;i<N;i++)if(!isDone(PD.faze[i].n))return PD.faze[i].n;return -1}
+
+function open(){
+  if(P.done.length&&P.ts&&Date.now()-P.ts>RESET_H*3600e3){P.done=[];P.ts=0;savP();toast("Nová návštěva – fáze vynulovány")}
+  $("pov").hidden=false;document.body.style.overflow="hidden";render();
+  if(P.tab==="f")setTimeout(scrollCur,30);
+}
+function close(){$("pov").hidden=true;document.body.style.overflow=""}
+function scrollCur(){var c=$("pov").querySelector(".ph.cur");if(c){var top=c.getBoundingClientRect().top+$("pov").scrollTop-130;$("pov").scrollTo({top:top,behavior:"smooth"})}}
+
+function render(){
+  $("pov").classList.add("cmp");
+  [].forEach.call($("povTabs").children,function(b){b.setAttribute("aria-pressed",String(b.dataset.v===P.tab))});
+  $("povF").hidden=P.tab!=="f";$("povS").hidden=P.tab!=="s";
+  $("povTitle").textContent=P.tab==="f"?"Postup prohlídky":"Slovník okenních pojmů";
+  if(P.tab==="f")renderF();else renderS();
+}
+
+function renderF(){
+  var d=P.done.length,cur=curPhase(),h="";
+  h+='<div class="pv-prog"><div class="trk"><i style="width:'+Math.round(d/N*100)+'%"></i></div><b>hotovo '+d+' / '+N+'</b></div>';
+  PD.faze.forEach(function(f){
+    var dn=isDone(f.n);
+    h+='<div class="ph'+(dn?' done':'')+(f.n===cur?' cur':'')+'" data-n="'+f.n+'"><div class="ph-h"><button class="ph-ck" data-ck="'+f.n+'" aria-pressed="'+dn+'" aria-label="Fáze '+f.n+' hotová">'+(dn?'✓':'')+'</button>';
+    h+='<div class="ph-m"><div class="ph-t">'+f.n+' · '+esc(f.t)+' <span>· '+esc(f.m)+'</span></div><div class="ph-hes">'+esc(f.h)+'</div></div></div></div>';
+  });
+  $("povF").innerHTML=h;
+}
+
+function allTerms(){
+  var L=PD.slov.map(function(s){return{t:s[0],d:s[1],own:-1}});
+  OWN.forEach(function(o,i){L.push({t:o.t,d:o.d,own:i})});
+  return L.sort(function(a,b){return a.t.localeCompare(b.t,"cs")});
+}
+function renderS(keepFocus){
+  var q=($("slQ")&&$("slQ").value||"").trim().toLowerCase();
+  if(!$("slQ")){
+    $("povS").innerHTML='<input id="slQ" type="text" autocomplete="off" placeholder="Hledat pojem… (např. přítlak)" style="margin-bottom:12px">'+
+    '<div class="card stack sl-add"><b id="slFormT">+ Přidat vlastní pojem</b>'+
+    '<input id="slT" type="text" autocomplete="off" placeholder="Pojem (např. Klapačka)">'+
+    '<textarea id="slD" placeholder="Co to je / jak to říct klientovi"></textarea>'+
+    '<div class="row"><button class="btn-acc" id="slSave" style="flex:1">Uložit pojem</button><button class="btn-ghost" id="slCancel" hidden>Zrušit</button></div></div>'+
+    '<div class="card" style="padding:0" id="slList"></div>'+
+    '<button class="btn-ghost" id="slCopy" style="width:100%;margin-top:12px">Zkopírovat moje pojmy (pro kolegy)</button>'+
+    '<div class="hint" style="margin-top:8px">Vlastní pojmy zůstávají v tomto zařízení. Smazání obhlídky je nesmaže.</div>';
+    $("slQ").addEventListener("input",function(){renderS()});
+    $("slSave").addEventListener("click",saveTerm);
+    $("slCancel").addEventListener("click",function(){editIdx=-1;formReset()});
+    $("slCopy").addEventListener("click",copyOwn);
+    q="";
+  }
+  var L=allTerms().filter(function(x){return !q||(x.t+" "+x.d).toLowerCase().indexOf(q)>=0});
+  var h=L.map(function(x){
+    var s='<div class="sl-it'+(x.own>=0?' own':'')+'"><b>'+esc(x.t)+'</b><span>'+esc(x.d)+'</span>';
+    if(x.own>=0){
+      s+=delIdx===x.own?'<div class="sl-act"><span style="color:var(--bad);font-weight:700;align-self:center">Smazat?</span><button class="btn-danger" data-dy="'+x.own+'">Ano</button><button data-dn="1">Ne</button></div>'
+        :'<div class="sl-act"><button data-ed="'+x.own+'">Upravit</button><button class="btn-danger" data-del="'+x.own+'">Smazat</button></div>';
+    }
+    return s+'</div>';
+  }).join("");
+  $("slList").innerHTML=h||'<div class="empty">Nic nenalezeno. Přidejte ho výše jako vlastní pojem.</div>';
+}
+function formReset(){$("slT").value="";$("slD").value="";$("slFormT").textContent="+ Přidat vlastní pojem";$("slSave").textContent="Uložit pojem";$("slCancel").hidden=true}
+function saveTerm(){
+  var t=$("slT").value.trim(),d=$("slD").value.trim();
+  if(!t){toast("Napište pojem");$("slT").focus();return}
+  if(editIdx>=0)OWN[editIdx]={t:t,d:d};else OWN.push({t:t,d:d});
+  sv(SK,OWN);toast(editIdx>=0?"Pojem upraven":"Pojem přidán");editIdx=-1;formReset();renderS();
+}
+function copyOwn(){
+  if(!OWN.length){toast("Zatím žádné vlastní pojmy");return}
+  var txt="Moje okenní pojmy (ObhlídkaEXPERT):\n"+OWN.map(function(o){return "• "+o.t+" – "+o.d}).join("\n");
+  function ok(){toast("Zkopírováno – vložte do zprávy")}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(ok,function(){fb()});else fb();
+  function fb(){var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(e){}document.body.removeChild(ta)}
+}
+
+/* events */
+$("btnPostup").addEventListener("click",open);
+$("povClose").addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!$("pov").hidden)close()});
+$("povTabs").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;P.tab=b.dataset.v;savP();render();$("pov").scrollTo(0,0)});
+$("povF").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.ck!=null){var n=+b.dataset.ck,i=P.done.indexOf(n);if(i>=0)P.done.splice(i,1);else P.done.push(n);P.ts=Date.now();savP();renderF();if(i<0)setTimeout(scrollCur,30);if(P.done.length===N)toast("Návštěva hotová 👏");return}
+});
+$("povS").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.ed!=null){editIdx=+b.dataset.ed;delIdx=-1;var o=OWN[editIdx];$("slT").value=o.t;$("slD").value=o.d;$("slFormT").textContent="Upravit pojem";$("slSave").textContent="Uložit změnu";$("slCancel").hidden=false;$("pov").scrollTo({top:0,behavior:"smooth"});$("slT").focus();return}
+  if(b.dataset.del!=null){delIdx=+b.dataset.del;renderS();return}
+  if(b.dataset.dn!=null){delIdx=-1;renderS();return}
+  if(b.dataset.dy!=null){OWN.splice(+b.dataset.dy,1);sv(SK,OWN);delIdx=-1;if(editIdx>=0){editIdx=-1;formReset()}renderS();toast("Pojem smazán")}
+});
+})();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>
+</body></html>
