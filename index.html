@@ -208,9 +208,12 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
 #proBox .body{border:2px solid #f0a83a;border-top:0}
 #instBox .body p{margin:0 0 8px;font-size:14.5px;line-height:1.45}
 #instBox .body p:last-child{margin-bottom:0}
-.ftr{margin:28px 0 0;text-align:center}
-.ftr img{display:block;width:100%;max-width:420px;height:auto;margin:0 auto;border-radius:12px}
-@media (prefers-color-scheme:dark){.ftr img{opacity:.88}}
+.cred{margin-top:22px;display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 14px 14px 16px}
+.cred-l{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+.cred-sig{display:block;width:108px;height:auto;border-radius:7px}
+.cred-t{font-size:12.5px;line-height:1.45;color:var(--muted)}
+.cred-t a{color:var(--z);font-weight:700;text-decoration:none;white-space:nowrap}
+.cred-logo{flex:none;width:76px;height:76px;border-radius:18px;box-shadow:0 2px 8px rgba(0,0,0,.22)}
 </style>
 </head><body>
 <div class="wrap">
@@ -232,7 +235,7 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
     <p><b>iPhone (Safari):</b> otevřete web v Safari → tlačítko Sdílet → <i>Přidat na plochu</i>. Pak appku spouštějte vždy z plochy.</p>
     <p><b>Android (Chrome):</b> menu ⋮ → <i>Přidat na plochu</i> / <i>Instalovat aplikaci</i>.</p>
     <p><b>Data se do zařízení ukládají automaticky</b> a zůstávají jen v něm (žádný server). Safari může data webu otevřeného jen v prohlížeči smazat po 7 dnech používání Safari bez návštěvy appky; z plochy se to dle Applu nemá dít. Nemažte „data webu“ v nastavení prohlížeče.</p>
-    <p><b>Po každé obhlídce</b> pošlete 📤 zálohu (Disk / e-mail) a výsledek přepište do Domovea.</p>
+    <p><b>Po každé obhlídce</b> přepište výsledek (a případně zkopírujte poznámku pro technika) do aplikace Domoveo. Zálohu je možné odeslat na Disk Google nebo na e-mail.</p>
   </div></details>
 </section>
 
@@ -318,9 +321,15 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
   <button id="btnBackup" class="btn-main" style="width:100%;margin-top:14px">📤 Poslat zálohu (Disk / e-mail)</button>
   <div class="hint" style="margin-top:6px">Shrnutí všech tří variant + všechna okna s rozměry. Obhlídka zůstává i v 🗂 Archivu 30 dní.</div>
   <div style="margin-top:18px" id="wipeWrap"></div>
+  <div class="cred">
+    <div class="cred-l">
+      <img class="cred-sig" src="footer.webp" width="240" height="41" alt="© 67M &amp; Claude 2026" loading="lazy">
+      <div class="cred-t">Něco by šlo vylepšit?<br>Napiš na <a href="mailto:mymolove19@gmail.com">mymolove19@gmail.com</a></div>
+    </div>
+    <img class="cred-logo" src="logo.webp" width="152" height="152" alt="ObhlídkaEXPERT" loading="lazy">
+  </div>
 </section>
 
-<footer class="ftr"><img src="footer.webp" width="720" height="122" alt="© 67M &amp; Claude 2026" loading="lazy"></footer>
 </div>
 
 <!-- 🛟 POSTUP (overlay, nemění rozpracovanou obhlídku) -->
