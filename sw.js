@@ -1,5 +1,5 @@
 // ObhlídkaEXPERT – offline cache. Při změně appky zvyšte číslo verze.
-const CACHE = "obhlidka-expert-v5";
+const CACHE = "obhlidka-expert-v6";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable.png", "./apple-touch-icon.png", "./footer.webp", "./logo.webp"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
