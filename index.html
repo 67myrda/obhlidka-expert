@@ -353,7 +353,7 @@ input.need{border:2px solid var(--bad)!important;background:var(--bad-bg)!import
 "use strict";
 var KEY="expert.v1", CKEY="expert.cenik.v3";
 var CAT=[
- {g:"Doprava",i:[["doprava","Dopravné (1× za zakázku)",400,""]]},
+ {g:"Doprava",i:[["doprava","Dopravné (1× za zakázku)",800,""]]},
  {g:"Základní servis",i:[["kridlo","Okenní křídlo",450,""],["balkon","Balkonové křídlo / dveře",619,""],["vchod","Vchodové dveře",816,"vč. seřízení zámku"],["posuv","Posuvné dveře",1547,""]]},
  {g:"Výměna těsnění (za metr a stranu)",i:[["t_drevo","Eurookna (dřevo)",197,"vč. materiálu a práce"],["t_plast","Plastová okna",221,"vyžaduje se fotka rohu rámu · hliník zatím jako plast"]]},
  {g:"Panty a závěsy",i:[["p_pvc","Pant spodní PVC okno",1350,"křídlo + rám + krytky · bez L/P, max. 1× foto"],["p_aubi","Pant spodní AUBI",2109,"závěs s ozubeným kolem · max. 1× foto závěsu"],["p_roto","Pant spodní ROTO UNI",1350,"náhrada, nelze-li zajistit stejný závěs · u starého kování 2× foto"],["p_sklop","Pant spodní ke sklopnému křídlu",450,"1× foto pantu"],["p_euro","Pant spodní EURO",1547,"nutno určit L/P a 2× foto závěsu"],["p_horni","Pant horní",1350,"jen otevíratelné okno · L/P a foto závěsu a rám. uzávěru"],["p_stred","Pant střední s čepem",1069,"1× foto rámového uzávěru"],["z_stred","Závěs střední přítlačný",675,"Maco nebo Roto · univerzální"],["p_vchod","Pant pro vchodové dveře",1547,"foto víčka (Simonswerk, Dr. Hahn, Jocker) + tloušťka rámu"]]},
@@ -381,6 +381,7 @@ var SEV_SUB={3:"bez toho se problém zhorší",2:"prevence drahých oprav",1:"kd
 function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var cenik=Object.assign({},DEF_CENIK,load(CKEY,{}));
+(function(){try{var mk=CKEY+".mig800";if(!localStorage.getItem(mk)){if(+cenik.doprava===400){cenik.doprava=DEF_CENIK.doprava;save(CKEY,cenik)}localStorage.setItem(mk,"1")}}catch(e){}})(); // 20.11.2026: dopravné 400 → 800 (přepíše starou uloženou hodnotu)
 var S=load(KEY,null); // {client,city,typ,items:[],scope,sleva,created}
 var view="start", editId=null, draft=null;
 
